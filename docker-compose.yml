@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  prometheus_server:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus_server
+    ports:
+      - 9090:9090
+    user: '1000:1000'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data:/prometheus
+    
+  node_exporter_local:
+    image: prom/node-exporter:v1.8.2
+    container_name: node_exporter_local
+    command: 
+      - '--path.rootfs=/host'
+    network_mode: host
+    pid: host
+    restart: always
+    volumes:
+      - '/:/host:ro,rslave'
+  grafana:
+    image: grafana/grafana:11.2.0-ubuntu
+    container_name: grafana
+    restart: always
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    ports:
+      - 3000:3000
+    user: '1000:1000'
+    volumes:
+      - ./grafana-data:/var/lib/grafana
